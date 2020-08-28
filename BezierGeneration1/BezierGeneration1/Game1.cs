@@ -19,9 +19,11 @@ namespace BezierGeneration1
         Matrix Projection = Matrix.CreateOrthographicOffCenter(0, 1280, 720, 0, -10, 10);
         BasicEffect BasicEffect;
         Texture2D Texture;
-        List<Bezier> BezList = new List<Bezier>();
 
+        List<Bezier> BezList = new List<Bezier>();
         int index = 0;
+
+        KeyboardState CurrentKeyboardState, PreviousKeyboardState;
 
         public Game1()
         {
@@ -29,14 +31,14 @@ namespace BezierGeneration1
             graphics.PreferredBackBufferWidth = 1280;
             graphics.PreferredBackBufferHeight = 720;
             Content.RootDirectory = "Content";
-            IsMouseVisible = true;
         }
 
         
         protected override void Initialize()
         {
-            //Bez = new Bezier();
-            BezList.Add(new Bezier(new Vector2(600, 585), new Vector2(560, 400)));
+            BezList.Add(new Bezier(new Vector2(600, 585), new Vector2(560, 400), new Vector2(661, 550), new Vector2(495, 558)));
+            BezList.Add(new Bezier(new Vector2(560, 400), new Vector2(530, 380), new Vector2(581, 443), new Vector2(604, 336)));
+            BezList.Add(new Bezier(new Vector2(530, 380), new Vector2(600, 300), new Vector2(512, 379), new Vector2(522, 273)));
             base.Initialize();
         }
 
@@ -66,12 +68,29 @@ namespace BezierGeneration1
         
         protected override void Update(GameTime gameTime)
         {
-            BezList[index].Update(gameTime);
-            //foreach (Bezier bez in BezList)
-            //{
-            //    bez.Update(gameTime);
-            //}
+            CurrentKeyboardState = Keyboard.GetState();
 
+            if (CurrentKeyboardState.IsKeyUp(Keys.T) &&
+                PreviousKeyboardState.IsKeyDown(Keys.T))
+            {
+                index++;
+            }
+
+            if (CurrentKeyboardState.IsKeyUp(Keys.G) &&
+                PreviousKeyboardState.IsKeyDown(Keys.G))
+            {
+                index--;
+            }
+
+            if (CurrentKeyboardState.IsKeyDown(Keys.Space))
+            {
+                int p = 0;
+            }
+
+            BezList[index].Update(gameTime);
+
+
+            PreviousKeyboardState = CurrentKeyboardState;
             base.Update(gameTime);
         }
 

@@ -22,12 +22,24 @@ namespace BezierGeneration1
         VertexPositionColor[] vertices = new VertexPositionColor[180];
 
         float offset = 100;
+        float increment = 0.05f;
 
-        public Bezier(Vector2 startPoint, Vector2 endPoint)
+        Vector2 pattern, pattern2;
+
+        public Bezier(Vector2 startPoint, Vector2 endPoint, Vector2? cp1 = null, Vector2? cp2 = null)
         {
             ActualPoints.Add(startPoint); //Start Point
             ActualPoints.Add(endPoint); //End Point
-            
+
+            if (cp1 != null)
+                ControlPoint1 = cp1.Value;
+
+            if (cp2 != null)
+                ControlPoint2 = cp2.Value;
+
+            pattern = new Vector2(startPoint.X - ControlPoint1.X, startPoint.Y - ControlPoint1.Y);
+            pattern2 = new Vector2(startPoint.X - ControlPoint2.X, startPoint.Y - ControlPoint2.Y);
+
             UpdateCurve();
         }
 
@@ -47,11 +59,6 @@ namespace BezierGeneration1
                 UpdateCurve();
             }
 
-            if (Keyboard.GetState().IsKeyDown(Keys.Space))
-            {
-                int p = 0;
-            }
-
             if (Keyboard.GetState().IsKeyDown(Keys.Up))
             {
                 offset++;
@@ -60,6 +67,16 @@ namespace BezierGeneration1
             if (Keyboard.GetState().IsKeyDown(Keys.Down))
             {
                 offset--;
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.Left))
+            {
+                increment += 0.05f;
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.Right))
+            {
+                increment -= 0.05f;
             }
         }
 
