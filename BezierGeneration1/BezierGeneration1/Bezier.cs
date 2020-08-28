@@ -19,18 +19,15 @@ namespace BezierGeneration1
         MouseState CurrentMouseState;
         Vector2 ControlPoint1, ControlPoint2;
 
-        float offset = 150;
+        VertexPositionColor[] vertices = new VertexPositionColor[180];
 
-        public Bezier()
+        float offset = 100;
+
+        public Bezier(Vector2 startPoint, Vector2 endPoint)
         {
-            ActualPoints.Add(new Vector2(450, 450)); //Start Point
-            ActualPoints.Add(new Vector2(350, 250)); //Control Point
-            ActualPoints.Add(new Vector2(350, 350)); //Control Point 2
-            ActualPoints.Add(new Vector2(450, 200)); //End Point
-
-            ControlPoint1 = ActualPoints[1];
-            ControlPoint2 = ActualPoints[2];
-
+            ActualPoints.Add(startPoint); //Start Point
+            ActualPoints.Add(endPoint); //End Point
+            
             UpdateCurve();
         }
 
@@ -72,35 +69,13 @@ namespace BezierGeneration1
             Font = contentManager.Load<SpriteFont>("Font");
         }
 
-        public void Draw(SpriteBatch spriteBatch)
+        public void Draw(GraphicsDevice graphicsDevice, BasicEffect basicEffect)
         {
-            for (int i = 0; i < CurvePoints.Count; i++)
+            foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
             {
-                spriteBatch.DrawString(Font, i.ToString(), CurvePoints[i], Color.Red);
+                pass.Apply();
+                graphicsDevice.DrawUserPrimitives(PrimitiveType.LineStrip, vertices, 0, CurvePoints.Count -2);
             }
-
-            for (int p = 0; p < CurvePoints.Count - 2; p++)
-            {
-                Vector2 dir1 = CurvePoints[p] - CurvePoints[p + 2];
-                for (float i = -1; i < 0; i += 0.01f)
-                {
-                    spriteBatch.Draw(Block, new Rectangle((int)CurvePoints[p].X + (int)(dir1.X * i), (int)CurvePoints[p].Y + (int)(dir1.Y * i), 1, 1), Color.White);
-                }
-            }
-
-            foreach (Vector2 vec in CurvePoints)
-            {
-                spriteBatch.Draw(Block, new Rectangle((int)vec.X, (int)vec.Y, 4,4), Color.White);
-            }
-
-            foreach (Vector2 vec in ActualPoints)
-            {
-                spriteBatch.Draw(Block, new Rectangle((int)vec.X, (int)vec.Y, 4, 4), Color.HotPink);
-            }
-
-
-            spriteBatch.Draw(Block, new Rectangle((int)ControlPoint1.X, (int)ControlPoint1.Y, 4, 4), Color.Yellow);
-            spriteBatch.Draw(Block, new Rectangle((int)ControlPoint2.X, (int)ControlPoint2.Y, 4, 4), Color.Purple);
         }
 
         public void UpdateCurve()
@@ -109,18 +84,27 @@ namespace BezierGeneration1
             CurvePoints.Clear();   
 
             BezierPoints.AddRange(ActualPoints);
-            
-            for (float t = 0f; t < 1.0; t += 0.025f)
+
+            CurvePoints.Add(ActualPoints[0]);
+                        
+            for (float t = 0f; t < 1.05; t += 0.05f)
             {
                 float nx = (float)Math.Pow(1 - t, 3) * ActualPoints[0].X + (3 * t) * ((float)Math.Pow(1 - t, 2)) * ControlPoint1.X + 
-                           3 * (float)Math.Pow(t, 2) * (1 - t) * ControlPoint2.X + (float)Math.Pow(t, 3) * ActualPoints[3].X;
+                           3 * (float)Math.Pow(t, 2) * (1 - t) * ControlPoint2.X + (float)Math.Pow(t, 3) * ActualPoints[1].X;
 
                 float nY = (float)Math.Pow(1 - t, 3) * ActualPoints[0].Y + (3 * t) * ((float)Math.Pow(1 - t, 2)) * ControlPoint1.Y +
-                           3 * (float)Math.Pow(t, 2) * (1 - t) * ControlPoint2.Y + (float)Math.Pow(t, 3) * ActualPoints[3].Y;
+                           3 * (float)Math.Pow(t, 2) * (1 - t) * ControlPoint2.Y + (float)Math.Pow(t, 3) * ActualPoints[1].Y;
                 
                 Vector2 newPoint1 = new Vector2(nx, nY); 
 
-                CurvePoints.Add(newPoint1);
+                CurvePoints.Add(newPoint1);               
+            }
+
+            CurvePoints.Add(ActualPoints[1]);
+
+            for (int i = 0; i < CurvePoints.Count - 1; i++)
+            {
+                vertices[i] = new VertexPositionColor(new Vector3(CurvePoints[i].X, CurvePoints[i].Y, 0), Color.White);
             }
         }
     }

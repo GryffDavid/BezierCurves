@@ -15,8 +15,13 @@ namespace BezierGeneration1
     public class Game1 : Microsoft.Xna.Framework.Game
     {
         GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
-        Bezier Bez;
+        SpriteBatch spriteBatch;       
+        Matrix Projection = Matrix.CreateOrthographicOffCenter(0, 1280, 720, 0, -10, 10);
+        BasicEffect BasicEffect;
+        Texture2D Texture;
+        List<Bezier> BezList = new List<Bezier>();
+
+        int index = 0;
 
         public Game1()
         {
@@ -30,35 +35,43 @@ namespace BezierGeneration1
         
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
-            Bez = new Bezier();
+            //Bez = new Bezier();
+            BezList.Add(new Bezier(new Vector2(600, 585), new Vector2(560, 400)));
             base.Initialize();
         }
 
         
         protected override void LoadContent()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            // TODO: use this.Content to load your game content here
-            Bez.LoadContent(Content);
+            BasicEffect = new BasicEffect(GraphicsDevice);
+
+            BasicEffect.Projection = Projection;
+            BasicEffect.VertexColorEnabled = true;
+
+            Texture = Content.Load<Texture2D>("Bg");
+
+            foreach (Bezier bez in BezList)
+            {
+                bez.LoadContent(Content);
+            }
         }
 
         
         protected override void UnloadContent()
         {
-            // TODO: Unload any non ContentManager content here
+
         }
 
         
         protected override void Update(GameTime gameTime)
         {
-            // Allows the game to exit
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
-                this.Exit();
+            BezList[index].Update(gameTime);
+            //foreach (Bezier bez in BezList)
+            //{
+            //    bez.Update(gameTime);
+            //}
 
-            // TODO: Add your update logic here
-            Bez.Update(gameTime);
             base.Update(gameTime);
         }
 
@@ -66,11 +79,15 @@ namespace BezierGeneration1
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);
-
-            // TODO: Add your drawing code here
             spriteBatch.Begin();
-            Bez.Draw(spriteBatch);
+            spriteBatch.Draw(Texture, new Vector2(1280/2 - Texture.Width/2, 100), Color.White);
             spriteBatch.End();
+
+            foreach (Bezier bez in BezList)
+            {
+                bez.Draw(GraphicsDevice, BasicEffect);
+            }
+
             base.Draw(gameTime);
         }
     }
