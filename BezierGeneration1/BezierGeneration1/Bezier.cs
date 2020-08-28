@@ -17,12 +17,19 @@ namespace BezierGeneration1
         List<Vector2> CurvePoints = new List<Vector2>();
         SpriteFont Font;
         MouseState CurrentMouseState;
+        Vector2 ControlPoint1, ControlPoint2;
+
+        float offset = 150;
 
         public Bezier()
         {
-            ActualPoints.Add(new Vector2(450, 450));
-            ActualPoints.Add(new Vector2(350, 300));
-            ActualPoints.Add(new Vector2(450, 200));
+            ActualPoints.Add(new Vector2(450, 450)); //Start Point
+            ActualPoints.Add(new Vector2(350, 250)); //Control Point
+            ActualPoints.Add(new Vector2(350, 350)); //Control Point 2
+            ActualPoints.Add(new Vector2(450, 200)); //End Point
+
+            ControlPoint1 = ActualPoints[1];
+            ControlPoint2 = ActualPoints[2];
 
             UpdateCurve();
         }
@@ -33,8 +40,29 @@ namespace BezierGeneration1
 
             if (CurrentMouseState.LeftButton == ButtonState.Pressed)
             {
-                ActualPoints[1] = new Vector2(CurrentMouseState.X, CurrentMouseState.Y);
+                ControlPoint1 = new Vector2(CurrentMouseState.X, CurrentMouseState.Y) + new Vector2(0, offset);
                 UpdateCurve();
+            }
+
+            if (CurrentMouseState.RightButton == ButtonState.Pressed)
+            {
+                ControlPoint2 = new Vector2(CurrentMouseState.X, CurrentMouseState.Y) + new Vector2(0, -offset);
+                UpdateCurve();
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.Space))
+            {
+                int p = 0;
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.Up))
+            {
+                offset++;
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.Down))
+            {
+                offset--;
             }
         }
 
@@ -69,6 +97,10 @@ namespace BezierGeneration1
             {
                 spriteBatch.Draw(Block, new Rectangle((int)vec.X, (int)vec.Y, 4, 4), Color.HotPink);
             }
+
+
+            spriteBatch.Draw(Block, new Rectangle((int)ControlPoint1.X, (int)ControlPoint1.Y, 4, 4), Color.Yellow);
+            spriteBatch.Draw(Block, new Rectangle((int)ControlPoint2.X, (int)ControlPoint2.Y, 4, 4), Color.Purple);
         }
 
         public void UpdateCurve()
@@ -78,11 +110,16 @@ namespace BezierGeneration1
 
             BezierPoints.AddRange(ActualPoints);
             
-            for (float t = 0f; t < 1.05; t += 0.05f)
+            for (float t = 0f; t < 1.0; t += 0.025f)
             {
-                Vector2 newPoint1 = new Vector2(
-                    (float)Math.Pow(1 - t, 2) * ActualPoints[0].X + (2 * t * (1 - t)) * (ActualPoints[1].X) + (float)Math.Pow(t, 2) * ActualPoints[2].X,
-                    (float)Math.Pow(1 - t, 2) * ActualPoints[0].Y + (2 * t * (1 - t)) * (ActualPoints[1].Y) + (float)Math.Pow(t, 2) * ActualPoints[2].Y);
+                float nx = (float)Math.Pow(1 - t, 3) * ActualPoints[0].X + (3 * t) * ((float)Math.Pow(1 - t, 2)) * ControlPoint1.X + 
+                           3 * (float)Math.Pow(t, 2) * (1 - t) * ControlPoint2.X + (float)Math.Pow(t, 3) * ActualPoints[3].X;
+
+                float nY = (float)Math.Pow(1 - t, 3) * ActualPoints[0].Y + (3 * t) * ((float)Math.Pow(1 - t, 2)) * ControlPoint1.Y +
+                           3 * (float)Math.Pow(t, 2) * (1 - t) * ControlPoint2.Y + (float)Math.Pow(t, 3) * ActualPoints[3].Y;
+                
+                Vector2 newPoint1 = new Vector2(nx, nY); 
+
                 CurvePoints.Add(newPoint1);
             }
         }
