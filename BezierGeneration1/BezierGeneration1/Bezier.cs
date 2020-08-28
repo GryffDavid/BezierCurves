@@ -17,12 +17,17 @@ namespace BezierGeneration1
         List<Vector2> CurvePoints = new List<Vector2>();
         SpriteFont Font;
         MouseState CurrentMouseState;
+        Vector2 ControlPoint1, ControlPoint2;
 
         public Bezier()
         {
-            ActualPoints.Add(new Vector2(450, 450));
-            ActualPoints.Add(new Vector2(350, 300));
-            ActualPoints.Add(new Vector2(450, 200));
+            ActualPoints.Add(new Vector2(450, 450)); //Start Point
+            ActualPoints.Add(new Vector2(350, 250)); //Control Point
+            ActualPoints.Add(new Vector2(350, 350)); //Control Point 2
+            ActualPoints.Add(new Vector2(450, 200)); //End Point
+
+            ControlPoint1 = ActualPoints[1];
+            ControlPoint2 = ActualPoints[2];
 
             UpdateCurve();
         }
@@ -33,8 +38,19 @@ namespace BezierGeneration1
 
             if (CurrentMouseState.LeftButton == ButtonState.Pressed)
             {
-                ActualPoints[1] = new Vector2(CurrentMouseState.X, CurrentMouseState.Y);
+                ControlPoint1 = new Vector2(CurrentMouseState.X, CurrentMouseState.Y);
                 UpdateCurve();
+            }
+
+            if (CurrentMouseState.RightButton == ButtonState.Pressed)
+            {
+                ControlPoint2 = new Vector2(CurrentMouseState.X, CurrentMouseState.Y);
+                UpdateCurve();
+            }
+
+            if (Keyboard.GetState().IsKeyDown(Keys.Space))
+            {
+                int p = 0;
             }
         }
 
@@ -69,6 +85,10 @@ namespace BezierGeneration1
             {
                 spriteBatch.Draw(Block, new Rectangle((int)vec.X, (int)vec.Y, 4, 4), Color.HotPink);
             }
+
+
+            spriteBatch.Draw(Block, new Rectangle((int)ControlPoint1.X, (int)ControlPoint1.Y, 4, 4), Color.Yellow);
+            spriteBatch.Draw(Block, new Rectangle((int)ControlPoint2.X, (int)ControlPoint2.Y, 4, 4), Color.Purple);
         }
 
         public void UpdateCurve()
@@ -80,9 +100,50 @@ namespace BezierGeneration1
             
             for (float t = 0f; t < 1.05; t += 0.05f)
             {
-                Vector2 newPoint1 = new Vector2(
-                    (float)Math.Pow(1 - t, 2) * ActualPoints[0].X + (2 * t * (1 - t)) * (ActualPoints[1].X) + (float)Math.Pow(t, 2) * ActualPoints[2].X,
-                    (float)Math.Pow(1 - t, 2) * ActualPoints[0].Y + (2 * t * (1 - t)) * (ActualPoints[1].Y) + (float)Math.Pow(t, 2) * ActualPoints[2].Y);
+                //B(t) = 
+                //(1 - t)^2*P0 +  
+
+                //2(1-t)tP1 + 
+
+                //t^2 * P2
+
+                #region Quadratic
+                //float term1x = (float)Math.Pow(1 - t, 2) * ActualPoints[0].X;
+                //float term2x = (2 * t * (1 - t)) * (ControlPoint1.X);
+                //float term3x = (float)Math.Pow(t, 2) * ActualPoints[2].X;
+
+                //float x = term1x + term2x + term3x;
+                //float y = (float)Math.Pow(1 - t, 2) * ActualPoints[0].Y + (2 * t * (1 - t)) * (ControlPoint1.Y) + (float)Math.Pow(t, 2) * ActualPoints[2].Y;
+                //Vector2 newPoint1 = new Vector2(x, y);
+                #endregion
+
+
+                #region Cubic
+                //float term = (3 * t * (1 - t));
+
+                float term = (3 * t) * ((float)Math.Pow(1 - t, 2));
+                float term2 = 3 * (float)Math.Pow(t, 2) * (1 - t);
+
+                float nx1 = (float)Math.Pow(1 - t, 3) * ActualPoints[0].X;
+                float nx2 = term * ControlPoint1.X;
+                float nx3 = term2 * ControlPoint2.X;
+                float nx4 = (float)Math.Pow(t, 3) * ActualPoints[3].X;
+
+                float nx = nx1 + nx2 + nx3 + nx4;
+
+
+                
+                float nY1 = (float)Math.Pow(1 - t, 3) * ActualPoints[0].Y;
+                float nY2 = term * ControlPoint1.Y;
+                float nY3 = term2 * ControlPoint2.Y;
+                float nY4 = (float)Math.Pow(t, 3) * ActualPoints[3].Y;
+
+                float nY = nY1 + nY2 + nY3 + nY4;
+
+                Vector2 newPoint1 = new Vector2(nx, nY); 
+                #endregion
+
+
                 CurvePoints.Add(newPoint1);
             }
         }
